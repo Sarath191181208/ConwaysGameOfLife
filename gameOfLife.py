@@ -4,6 +4,7 @@ import random
 import os
 import json
 import numpy as np
+import threading
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -150,7 +151,10 @@ class Grid():
 
     def draw(self, win=None):
         win = self.WIN
-        win.fill(boardClr)
+
+        background = pygame.Surface((self.width,self.height))
+        win.blit(background,(0,0))
+
         rowGap = self.height / self.rows
         colGap = self.width / self.cols
         # Draw Cubes
@@ -243,11 +247,6 @@ class Cube():
         for i in range(max(0, x-1), min(self.rows, x+2)):
             for j in range(max(0, y-1), min(self.cols, y+2)):
                 total += board[i][j].value
-        # for n in range(-1, 2):
-        #     for m in range(-1, 2):
-        #         x_edge = (self.row+n+self.rows) % self.rows
-        #         y_edge = (self.col+m+self.cols) % self.cols
-        #         total += board[x_edge][y_edge].value
         total -= self.value
         return total
 
@@ -271,7 +270,7 @@ class Cube():
 
     def clicked(self):
         self.value = 1
-        self.clickAnimation()
+        self.clickAnimation(-6)
         pygame.display.update()
 
     def delete(self):
@@ -286,6 +285,19 @@ Widgetsbackground = pygame.Surface(
     (WIN.get_width()-board.width, WIN.get_height()))
 Widgetsbackground.fill(WHITE)
 createbuttons()
+WIN.blit(Widgetsbackground,(board.width+1,0))
+manager.draw_ui(WIN)
+pygame.display.update()
+
+def updateWidgetsPannel(time_delta):
+    global Widgetsbackground , board , WIN
+    manager.update(time_delta)
+    WIN.blit(Widgetsbackground, (board.width+1, 0))
+    manager.draw_ui(WIN)
+    pygame.display.update()
+
+
+
 runGameOfLife = False
 run = True
 while run:
@@ -334,11 +346,12 @@ while run:
     if runGameOfLife:
         board.Conway()
 
-    manager.update(time_delta)
-    WIN.blit(Widgetsbackground, (board.width+1, 0))
-    manager.draw_ui(WIN)
+    th = threading.Thread(target=updateWidgetsPannel(time_delta))
+    th.start()
+    th.join()
 
-    pygame.display.update()
+
+
 
 
 pygame.quit()
