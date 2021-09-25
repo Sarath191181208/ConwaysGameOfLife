@@ -50,6 +50,23 @@ def createbuttons(board):
             y_count += 1
             y += 60
 
+def checkKeypress(board):
+    global boardClr
+    if event.key == pygame.K_SPACE:
+        board.start()
+
+    if event.key == pygame.K_c:
+        board.clear()
+
+    if event.key == pygame.K_s:
+        board.save()
+
+    if event.key == pygame.K_o:
+        board.load()
+
+    if event.key == pygame.K_r:
+        board.randomBoard()
+
 
 board = Grid(40, 40, 600, 600, WIN)
 
@@ -86,6 +103,9 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+
+        if event.type == pygame.KEYDOWN:
+            checkKeypress(board)
 
         manager.process_events(event)
 
